@@ -1,0 +1,12 @@
+# RECOVERY (see agents-logs.txt, 2026-07-08): Dockerfile's runner stage does
+# `COPY --from=builder /app/public ./public`, which is the standard pattern
+# for a Next.js standalone build (public/ holds static assets served as-is).
+# Task 1's scaffold never created a public/ directory, so the builder stage
+# had nothing at /app/public and the COPY failed on the first real `docker
+# build` (git can't track an empty directory, so the absence wasn't visible
+# as a diff either). This file's actual content is incidental — its purpose
+# is to make public/ exist and be committed. Content chosen to be genuinely
+# useful rather than an empty placeholder: a permissive robots.txt is a
+# reasonable default for an app with no public marketing pages to gate.
+User-agent: *
+Allow: /
