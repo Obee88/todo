@@ -40,26 +40,28 @@ export default function AddItemForm({ listId }: { listId: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-center gap-2">
-      <label htmlFor="new-item-title" className="sr-only">
-        New item title
-      </label>
-      <input
-        id="new-item-title"
-        type="text"
-        required
-        placeholder="Add an item…"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
-      />
-      <button
-        type="submit"
-        disabled={submitting}
-        className="rounded bg-gray-900 px-3 py-2 text-sm text-white disabled:opacity-50"
-      >
-        Add
-      </button>
+    <form onSubmit={handleSubmit} className="space-y-1">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <label htmlFor="new-item-title" className="sr-only">
+          New item title
+        </label>
+        <input
+          id="new-item-title"
+          type="text"
+          required
+          placeholder="Add an item…"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
+        />
+        <button
+          type="submit"
+          disabled={submitting}
+          className="w-full rounded bg-gray-900 px-3 py-2 text-sm text-white disabled:opacity-50 sm:w-auto"
+        >
+          Add
+        </button>
+      </div>
       {error && (
         <p role="alert" className="text-sm text-red-600">
           {error}

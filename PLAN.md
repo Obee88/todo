@@ -274,9 +274,12 @@ Per `vps/MANAGED_PROJECT_GUIDE.md`, before the first production deploy can succe
 
 - [ ] Create a GitHub repository for `todo/` and push the code.
 - [ ] Register the project in the `vps.codes.hr` dashboard: slug `todo`, image `ghcr.io/<owner>/todo`, port `3000`, healthcheck path `/healthz`, "Provision database" toggled on, domain `todo.codes.hr`.
+- [ ] **Set `AUTH_SECRET` as a secret env var in the dashboard's project settings** (generate with `openssl rand -base64 32`). `DATABASE_URL` is auto-injected by the platform, but `AUTH_SECRET` is app-specific and is **not** — next-auth throws `MissingSecret` and every `/api/auth/*` route 500s until this is set. See RECOVERY note below.
 - [ ] Copy the `WEBHOOK_URL` and `WEBHOOK_SECRET` the dashboard prints and add them as GitHub repo secrets.
 - [ ] Create the DNS record for `todo.codes.hr` pointing at the VPS.
 - [ ] Push to `main` and watch the deployment go `pending → running → success` in the dashboard.
+
+> **RECOVERY note (2026-07-08):** first production deploy shipped without `AUTH_SECRET` set in the dashboard — it was never called out as its own checklist item (only `DATABASE_URL` was flagged as auto-managed; `AUTH_SECRET` was silently assumed). Result: `https://todo.codes.hr/api/auth/error` returned 500 with `[auth][error] MissingSecret`. Root cause was a documentation gap, not a code defect — `src/auth.config.ts`/`src/auth.ts` correctly read `AUTH_SECRET` from the environment. Fixed by setting `AUTH_SECRET` in the dashboard and redeploying. See `agents-logs.txt` for the full incident record. Any future task that adds an Auth.js-backed app to this platform must add its required secrets (not just `DATABASE_URL`) to this section explicitly.
 
 ---
 

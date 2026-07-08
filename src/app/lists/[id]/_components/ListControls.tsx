@@ -78,13 +78,16 @@ export default function ListControls({
   }
 
   if (!isOwner) {
-    return <h1 className="text-2xl font-semibold">{list.name}</h1>;
+    return <h1 className="truncate text-2xl font-semibold">{list.name}</h1>;
   }
 
   return (
     <div className="space-y-3">
       {renaming ? (
-        <form onSubmit={handleRename} className="flex items-center gap-2">
+        <form
+          onSubmit={handleRename}
+          className="flex flex-wrap items-center gap-2"
+        >
           <label htmlFor="rename-list" className="sr-only">
             List name
           </label>
@@ -94,12 +97,12 @@ export default function ListControls({
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="flex-1 rounded border border-gray-300 px-3 py-2 text-xl font-semibold"
+            className="min-w-0 flex-1 basis-full rounded border border-gray-300 px-3 py-2 text-xl font-semibold sm:basis-auto"
           />
           <button
             type="submit"
             disabled={submitting}
-            className="rounded bg-gray-900 px-3 py-2 text-sm text-white disabled:opacity-50"
+            className="shrink-0 rounded bg-gray-900 px-3 py-2 text-sm text-white disabled:opacity-50"
           >
             Save
           </button>
@@ -110,19 +113,21 @@ export default function ListControls({
               setRenaming(false);
               setError(null);
             }}
-            className="rounded border border-gray-300 px-3 py-2 text-sm"
+            className="shrink-0 rounded border border-gray-300 px-3 py-2 text-sm"
           >
             Cancel
           </button>
         </form>
       ) : (
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">{list.name}</h1>
-          <div className="flex gap-3 text-sm">
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="min-w-0 truncate text-2xl font-semibold">
+            {list.name}
+          </h1>
+          <div className="flex shrink-0 gap-3 text-sm">
             <button
               type="button"
               onClick={() => setRenaming(true)}
-              className="text-gray-500 underline hover:text-gray-700"
+              className="-m-1 p-1 text-gray-500 underline hover:text-gray-700"
             >
               Rename
             </button>
@@ -130,7 +135,7 @@ export default function ListControls({
               type="button"
               onClick={handleDelete}
               disabled={submitting}
-              className="text-red-600 underline hover:text-red-800 disabled:opacity-50"
+              className="-m-1 p-1 text-red-600 underline hover:text-red-800 disabled:opacity-50"
             >
               Delete
             </button>

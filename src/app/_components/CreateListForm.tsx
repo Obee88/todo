@@ -45,8 +45,8 @@ export default function CreateListForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-start gap-2">
-      <div className="flex-1">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row sm:items-start">
+      <div className="flex-1 min-w-0">
         <label htmlFor="list-name" className="sr-only">
           List name
         </label>
@@ -69,7 +69,7 @@ export default function CreateListForm() {
       <button
         type="submit"
         disabled={submitting}
-        className="rounded bg-gray-900 px-3 py-2 text-white disabled:opacity-50"
+        className="w-full rounded bg-gray-900 px-3 py-2 text-white disabled:opacity-50 sm:w-auto"
       >
         {submitting ? "Creating..." : "Create list"}
       </button>

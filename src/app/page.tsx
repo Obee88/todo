@@ -34,10 +34,12 @@ export default async function HomePage() {
   ]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-8">
+    <main className="flex min-h-screen flex-col items-center p-4 sm:p-8">
       <div className="w-full max-w-lg space-y-8">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Your lists</h1>
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="min-w-0 truncate text-2xl font-semibold">
+            Your lists
+          </h1>
           <form
             action={async () => {
               "use server";
@@ -46,7 +48,7 @@ export default async function HomePage() {
           >
             <button
               type="submit"
-              className="text-sm text-gray-500 underline hover:text-gray-700"
+              className="-m-1 shrink-0 p-1 text-sm text-gray-500 underline hover:text-gray-700"
             >
               Sign out
             </button>

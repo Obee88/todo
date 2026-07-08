@@ -53,7 +53,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8">
+    <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8">
       <div className="w-full max-w-sm space-y-6">
         <h1 className="text-2xl font-semibold">Log in</h1>
         <form onSubmit={handleSubmit} className="space-y-4">

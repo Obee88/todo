@@ -73,7 +73,7 @@ export default async function ListDetailPage({ params }: PageProps) {
   const members = isOwner ? await getListMembers(id) : [];
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-8">
+    <main className="flex min-h-screen flex-col items-center p-4 sm:p-8">
       <div className="w-full max-w-lg space-y-8">
         <ListControls list={list} isOwner={isOwner} />
 

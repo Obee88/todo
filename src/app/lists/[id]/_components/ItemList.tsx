@@ -136,7 +136,7 @@ export default function ItemList({
           return (
             <li
               key={item.id}
-              className="flex items-center gap-3 py-2"
+              className="flex flex-wrap items-center gap-3 py-2 sm:flex-nowrap"
               data-done={item.done}
             >
               <input
@@ -145,12 +145,12 @@ export default function ItemList({
                 disabled={isPending}
                 onChange={() => handleToggle(item)}
                 aria-label={`Mark "${item.title}" as ${item.done ? "not done" : "done"}`}
-                className="h-4 w-4"
+                className="h-5 w-5 shrink-0"
               />
               {isEditing ? (
                 <form
                   onSubmit={(e) => handleEditSubmit(e, item)}
-                  className="flex flex-1 items-center gap-2"
+                  className="flex min-w-0 flex-1 flex-wrap items-center gap-2"
                 >
                   <label htmlFor={`edit-item-${item.id}`} className="sr-only">
                     Item title
@@ -161,19 +161,19 @@ export default function ItemList({
                     required
                     value={editTitle}
                     onChange={(e) => setEditTitle(e.target.value)}
-                    className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm"
+                    className="min-w-0 flex-1 basis-full rounded border border-gray-300 px-2 py-1 text-sm sm:basis-auto"
                   />
                   <button
                     type="submit"
                     disabled={isPending}
-                    className="rounded bg-gray-900 px-2 py-1 text-xs text-white disabled:opacity-50"
+                    className="shrink-0 rounded bg-gray-900 px-2 py-1 text-xs text-white disabled:opacity-50"
                   >
                     Save
                   </button>
                   <button
                     type="button"
                     onClick={() => setEditingId(null)}
-                    className="rounded border border-gray-300 px-2 py-1 text-xs"
+                    className="shrink-0 rounded border border-gray-300 px-2 py-1 text-xs"
                   >
                     Cancel
                   </button>
@@ -181,7 +181,7 @@ export default function ItemList({
               ) : (
                 <>
                   <span
-                    className={`flex-1 text-sm ${
+                    className={`min-w-0 flex-1 truncate text-sm ${
                       item.done ? "text-gray-400 line-through" : "text-gray-900"
                     }`}
                   >
@@ -191,7 +191,7 @@ export default function ItemList({
                     type="button"
                     onClick={() => startEditing(item)}
                     disabled={isPending}
-                    className="text-xs text-gray-500 underline hover:text-gray-700 disabled:opacity-50"
+                    className="-m-1 shrink-0 p-1 text-xs text-gray-500 underline hover:text-gray-700 disabled:opacity-50"
                   >
                     Edit
                   </button>
@@ -199,7 +199,7 @@ export default function ItemList({
                     type="button"
                     onClick={() => handleDelete(item)}
                     disabled={isPending}
-                    className="text-xs text-red-600 underline hover:text-red-800 disabled:opacity-50"
+                    className="-m-1 shrink-0 p-1 text-xs text-red-600 underline hover:text-red-800 disabled:opacity-50"
                   >
                     Delete
                   </button>

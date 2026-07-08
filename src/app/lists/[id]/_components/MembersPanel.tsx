@@ -93,14 +93,17 @@ export default function MembersPanel({
           {members.map((member) => (
             <li
               key={member.userId}
-              className="flex items-center justify-between rounded border border-gray-200 px-3 py-2 text-sm"
+              className="flex items-center justify-between gap-3 rounded border border-gray-200 px-3 py-2 text-sm"
             >
-              <span>{member.name ? `${member.name} · ` : ""}{member.email}</span>
+              <span className="min-w-0 truncate">
+                {member.name ? `${member.name} · ` : ""}
+                {member.email}
+              </span>
               <button
                 type="button"
                 onClick={() => handleRemove(member.userId)}
                 disabled={removingId === member.userId}
-                className="text-red-600 underline hover:text-red-800 disabled:opacity-50"
+                className="-m-1 shrink-0 p-1 text-red-600 underline hover:text-red-800 disabled:opacity-50"
               >
                 Remove
               </button>
@@ -109,8 +112,8 @@ export default function MembersPanel({
         </ul>
       )}
 
-      <form onSubmit={handleInvite} className="flex items-start gap-2">
-        <div className="flex-1">
+      <form onSubmit={handleInvite} className="flex flex-col gap-2 sm:flex-row sm:items-start">
+        <div className="min-w-0 flex-1">
           <label htmlFor="invite-email" className="sr-only">
             Invite by email
           </label>
@@ -132,7 +135,7 @@ export default function MembersPanel({
         <button
           type="submit"
           disabled={submitting}
-          className="rounded bg-gray-900 px-3 py-2 text-white disabled:opacity-50"
+          className="w-full rounded bg-gray-900 px-3 py-2 text-white disabled:opacity-50 sm:w-auto"
         >
           {submitting ? "Inviting..." : "Invite"}
         </button>
