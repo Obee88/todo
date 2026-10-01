@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 type ListLike = { id: string; name: string };
 
@@ -16,12 +17,17 @@ type ListLike = { id: string; name: string };
 // across the app (see src/app/page.tsx's DECISION comment). Alternatives
 // considered: Server Actions colocated in this file (rejected for the same
 // consistency reason). Reversal cost: low.
+// `compact` renders the header for a column on the home-page board: a
+// smaller h2 that links through to the full /lists/[id] page, instead of
+// the detail page's h1.
 export default function ListControls({
   list,
   isOwner,
+  compact = false,
 }: {
   list: ListLike;
   isOwner: boolean;
+  compact?: boolean;
 }) {
   const router = useRouter();
   const [renaming, setRenaming] = useState(false);
@@ -77,8 +83,18 @@ export default function ListControls({
     }
   }
 
+  const title = compact ? (
+    <h2 className="min-w-0 truncate text-lg font-semibold">
+      <Link href={`/lists/${list.id}`} className="hover:underline">
+        {list.name}
+      </Link>
+    </h2>
+  ) : (
+    <h1 className="min-w-0 truncate text-2xl font-semibold">{list.name}</h1>
+  );
+
   if (!isOwner) {
-    return <h1 className="truncate text-2xl font-semibold">{list.name}</h1>;
+    return title;
   }
 
   return (
@@ -88,16 +104,18 @@ export default function ListControls({
           onSubmit={handleRename}
           className="flex flex-wrap items-center gap-2"
         >
-          <label htmlFor="rename-list" className="sr-only">
+          <label htmlFor={`rename-list-${list.id}`} className="sr-only">
             List name
           </label>
           <input
-            id="rename-list"
+            id={`rename-list-${list.id}`}
             type="text"
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="min-w-0 flex-1 basis-full rounded border border-gray-300 px-3 py-2 text-xl font-semibold sm:basis-auto"
+            className={`min-w-0 flex-1 basis-full rounded border border-gray-300 px-3 py-2 font-semibold sm:basis-auto ${
+              compact ? "text-base" : "text-xl"
+            }`}
           />
           <button
             type="submit"
@@ -120,9 +138,7 @@ export default function ListControls({
         </form>
       ) : (
         <div className="flex items-center justify-between gap-4">
-          <h1 className="min-w-0 truncate text-2xl font-semibold">
-            {list.name}
-          </h1>
+          {title}
           <div className="flex shrink-0 gap-3 text-sm">
             <button
               type="button"

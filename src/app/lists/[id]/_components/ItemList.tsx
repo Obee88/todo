@@ -117,7 +117,7 @@ export default function ItemList({
   if (items.length === 0) {
     return (
       <p className="text-sm text-gray-400">
-        No items yet — add one below.
+        No items yet.
       </p>
     );
   }

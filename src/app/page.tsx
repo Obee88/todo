@@ -1,12 +1,14 @@
-import Link from "next/link";
-
 import { auth, signOut } from "@/auth";
-import { getMemberLists, getOwnedLists } from "@/lib/lists";
+import { getListMembers, getMemberLists, getOwnedLists } from "@/lib/lists";
+import { getSortedListItems } from "@/lib/items";
 import CreateListForm from "./_components/CreateListForm";
+import ListColumn from "./_components/ListColumn";
 
 // PLAN.md Section 3 Interfaces: "/ | page | required | Lists the user's own
 // lists + lists shared with them." Task 5 wires up the "shared with them"
-// half (owned-only was Task 3's interim state).
+// half (owned-only was Task 3's interim state). Lists are rendered as a
+// full-width board, one fully interactive column per list (see ListColumn),
+// rather than a list of links to /lists/[id].
 //
 // # DECISION: server component that fetches owned lists and member lists as
 // two separate queries (getOwnedLists + getMemberLists) rendered as two
@@ -33,74 +35,76 @@ export default async function HomePage() {
     getMemberLists(userId),
   ]);
 
+  // Board view: every list is rendered in full as its own column, so each
+  // column needs its items (and, for owned lists, its members) up front.
+  // Owned lists come first, then lists shared with the user.
+  const columns = await Promise.all([
+    ...ownedLists.map(async (list) => ({
+      list,
+      isOwner: true,
+      items: await getSortedListItems(list.id),
+      members: await getListMembers(list.id),
+    })),
+    ...memberLists.map(async (list) => ({
+      list,
+      isOwner: false,
+      items: await getSortedListItems(list.id),
+      members: [],
+    })),
+  ]);
+
+  // # DECISION: the page is exactly one viewport tall (h-dvh) with the board
+  // as the only flex-1 region; the board scrolls horizontally and each
+  // column scrolls vertically on its own (see ListColumn), so the page
+  // itself never scrolls and lists don't scroll together. Reversal cost:
+  // low.
   return (
-    <main className="flex min-h-screen flex-col items-center p-4 sm:p-8">
-      <div className="w-full max-w-lg space-y-8">
+    <main className="flex h-dvh flex-col gap-4 p-4 sm:p-6">
+      <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-center justify-between gap-4">
           <h1 className="min-w-0 truncate text-2xl font-semibold">
             Your lists
           </h1>
-          <form
-            action={async () => {
-              "use server";
-              await signOut({ redirectTo: "/login" });
-            }}
-          >
-            <button
-              type="submit"
-              className="-m-1 shrink-0 p-1 text-sm text-gray-500 underline hover:text-gray-700"
-            >
-              Sign out
-            </button>
-          </form>
+          <SignOutButton className="sm:hidden" />
         </div>
-
-        <CreateListForm />
-
-        <section className="space-y-2">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
-            Owned by you
-          </h2>
-          {ownedLists.length === 0 ? (
-            <p className="text-sm text-gray-500">
-              You don&apos;t have any lists yet. Create one above.
-            </p>
-          ) : (
-            <ul className="space-y-2">
-              {ownedLists.map((list) => (
-                <li key={list.id}>
-                  <Link
-                    href={`/lists/${list.id}`}
-                    className="block rounded border border-gray-200 px-4 py-3 hover:border-gray-400"
-                  >
-                    {list.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        {memberLists.length > 0 && (
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
-              Shared with you
-            </h2>
-            <ul className="space-y-2">
-              {memberLists.map((list) => (
-                <li key={list.id}>
-                  <Link
-                    href={`/lists/${list.id}`}
-                    className="block rounded border border-gray-200 px-4 py-3 hover:border-gray-400"
-                  >
-                    {list.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+        <div className="flex items-start gap-4">
+          <div className="w-full sm:w-96">
+            <CreateListForm />
+          </div>
+          <SignOutButton className="hidden py-2 sm:block" />
+        </div>
       </div>
+
+      {columns.length === 0 ? (
+        <p className="text-sm text-gray-500">
+          You don&apos;t have any lists yet. Create one above.
+        </p>
+      ) : (
+        <div className="-mx-4 flex min-h-0 flex-1 snap-x items-start gap-4 overflow-x-auto overflow-y-hidden px-4 pb-2 sm:-mx-6 sm:px-6">
+          {columns.map((column) => (
+            <ListColumn key={column.list.id} {...column} />
+          ))}
+        </div>
+      )}
     </main>
+  );
+}
+
+function SignOutButton({ className = "" }: { className?: string }) {
+  return (
+    <form
+      className={className}
+      action={async () => {
+        "use server";
+        await signOut({ redirectTo: "/login" });
+      }}
+    >
+      <button
+        type="submit"
+        className="-m-1 shrink-0 p-1 text-sm text-gray-500 underline hover:text-gray-700"
+      >
+        Sign out
+      </button>
+    </form>
   );
 }

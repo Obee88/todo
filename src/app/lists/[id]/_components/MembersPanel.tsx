@@ -114,11 +114,11 @@ export default function MembersPanel({
 
       <form onSubmit={handleInvite} className="flex flex-col gap-2 sm:flex-row sm:items-start">
         <div className="min-w-0 flex-1">
-          <label htmlFor="invite-email" className="sr-only">
+          <label htmlFor={`invite-email-${listId}`} className="sr-only">
             Invite by email
           </label>
           <input
-            id="invite-email"
+            id={`invite-email-${listId}`}
             type="email"
             required
             placeholder="Invite by email"

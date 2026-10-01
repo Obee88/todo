@@ -42,11 +42,11 @@ export default function AddItemForm({ listId }: { listId: string }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-1">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <label htmlFor="new-item-title" className="sr-only">
+        <label htmlFor={`new-item-title-${listId}`} className="sr-only">
           New item title
         </label>
         <input
-          id="new-item-title"
+          id={`new-item-title-${listId}`}
           type="text"
           required
           placeholder="Add an item…"
