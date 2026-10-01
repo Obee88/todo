@@ -38,6 +38,7 @@ function item(overrides: Partial<{
   id: string;
   title: string;
   done: boolean;
+  inProgress: boolean;
   position: number;
 }>) {
   return {
@@ -45,6 +46,7 @@ function item(overrides: Partial<{
     listId: "list-1",
     title: "Milk",
     done: false,
+    inProgress: false,
     position: 0,
     createdAt: new Date("2026-01-01T00:00:00Z"),
     updatedAt: new Date("2026-01-01T00:00:00Z"),
@@ -104,6 +106,32 @@ describe("sortListItems (pure comparator)", () => {
     sortListItems(items);
 
     expect(items).toEqual(copy);
+  });
+
+  it("given an in-progress undone item, when sorted, then it comes first in the undone group and the rest keep position order", () => {
+    const items = [
+      item({ id: "A", position: 0 }),
+      item({ id: "B", done: true, position: 1 }),
+      item({ id: "C", position: 2 }),
+      item({ id: "D", inProgress: true, position: 3 }),
+    ];
+
+    const result = sortListItems(items);
+
+    expect(result.map((i) => i.id)).toEqual(["D", "A", "C", "B"]);
+  });
+
+  it("given several in-progress items, when sorted, then they all come first in position order", () => {
+    const items = [
+      item({ id: "A", position: 0 }),
+      item({ id: "B", inProgress: true, position: 1 }),
+      item({ id: "C", position: 2 }),
+      item({ id: "D", inProgress: true, position: 3 }),
+    ];
+
+    const result = sortListItems(items);
+
+    expect(result.map((i) => i.id)).toEqual(["B", "D", "A", "C"]);
   });
 });
 

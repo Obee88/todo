@@ -88,6 +88,9 @@ export const listItems = pgTable("list_item", {
     .references(() => lists.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   done: boolean("done").notNull().default(false),
+  // "Currently working on" — any number per list. Sorted to the top of the
+  // undone group.
+  inProgress: boolean("in_progress").notNull().default(false),
   // Assigned as an auto-incrementing per-list counter at creation time and
   // never changes afterward — see PLAN.md Section 3 "Sort rule". Sort key
   // only; not a manual-reorder handle (no drag-to-reorder in v1).

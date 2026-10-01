@@ -1,4 +1,4 @@
-import { asc, eq, sql } from "drizzle-orm";
+import { asc, desc, eq, sql } from "drizzle-orm";
 
 import { db } from "@/lib/db";
 import { listItems } from "@/lib/db/schema";
@@ -11,6 +11,8 @@ export type ListItemRow = typeof listItems.$inferSelect;
 // ASC`. New items get `position = max(position for that list) + 1`.
 // Checking/unchecking an item changes only `done`, never `position` — so
 // within each group (undone / done) items retain creation order."
+// Extended with the "working on" flag: within a group, in-progress items
+// sort first — `done ASC, in_progress DESC, position ASC`.
 
 /**
  * All items in list `listId`, ordered per PLAN.md's sort rule: undone
@@ -34,7 +36,11 @@ export async function getSortedListItems(
     .select()
     .from(listItems)
     .where(eq(listItems.listId, listId))
-    .orderBy(asc(listItems.done), asc(listItems.position));
+    .orderBy(
+      asc(listItems.done),
+      desc(listItems.inProgress),
+      asc(listItems.position)
+    );
 }
 
 /**
@@ -51,11 +57,13 @@ export async function getSortedListItems(
  * incorrectly) is intentional duplication of intent, not of behavior divergence
  * risk — both encode the identical two-key sort.
  */
-export function sortListItems<T extends { done: boolean; position: number }>(
-  items: T[]
-): T[] {
+export function sortListItems<
+  T extends { done: boolean; inProgress?: boolean; position: number },
+>(items: T[]): T[] {
   return [...items].sort((a, b) => {
     if (a.done !== b.done) return a.done ? 1 : -1;
+    // Items being worked on go to the top of their group.
+    if (!!a.inProgress !== !!b.inProgress) return a.inProgress ? -1 : 1;
     return a.position - b.position;
   });
 }

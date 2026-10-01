@@ -9,7 +9,8 @@ import { getAccessibleList } from "@/lib/lists";
 
 // PATCH/DELETE /api/lists/[id]/items/[itemId] — PLAN.md Section 3
 // Interfaces: "PATCH ... required, access-checked ... { title?, done? } ->
-// updates item." / "DELETE ... required, access-checked ... Deletes item."
+// updates item." (extended with `inProgress?` — the "working on" flag) /
+// "DELETE ... required, access-checked ... Deletes item."
 //
 // # DECISION: partial-update schema — both `title` and `done` are optional,
 // but at least one must be present, and each provided field is validated
@@ -24,12 +25,20 @@ const patchItemSchema = z
   .object({
     title: z.string().trim().min(1, "Title is required").max(500).optional(),
     done: z.boolean().optional(),
+    inProgress: z.boolean().optional(),
   })
-  .refine((data) => data.title !== undefined || data.done !== undefined, {
-    message: "At least one of title or done must be provided",
+  .refine(
+    (data) =>
+      data.title !== undefined ||
+      data.done !== undefined ||
+      data.inProgress !== undefined,
+    { message: "At least one of title, done or inProgress must be provided" }
+  )
+  .refine((data) => !(data.done && data.inProgress), {
+    message: "A done item cannot be in progress",
   });
 
-type RouteParams = { params: Promise<{ id: string; itemId: string }> };
+type RouteParams ={ params: Promise<{ id: string; itemId: string }> };
 
 export async function PATCH(request: Request, { params }: RouteParams) {
   const { id: listId, itemId } = await params;
@@ -74,6 +83,13 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   };
   if (parsed.data.title !== undefined) updates.title = parsed.data.title;
   if (parsed.data.done !== undefined) updates.done = parsed.data.done;
+  if (parsed.data.inProgress !== undefined) {
+    updates.inProgress = parsed.data.inProgress;
+  }
+  // Finishing an item stops work on it; starting work on a done item
+  // reopens it.
+  if (parsed.data.done === true) updates.inProgress = false;
+  if (parsed.data.inProgress === true) updates.done = false;
 
   const [updated] = await db
     .update(listItems)

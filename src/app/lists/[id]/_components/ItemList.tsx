@@ -7,6 +7,7 @@ type ItemLike = {
   id: string;
   title: string;
   done: boolean;
+  inProgress: boolean;
   position: number;
 };
 
@@ -50,7 +51,10 @@ export default function ItemList({
     });
   }
 
-  async function patchItem(id: string, body: { title?: string; done?: boolean }) {
+  async function patchItem(
+    id: string,
+    body: { title?: string; done?: boolean; inProgress?: boolean }
+  ) {
     setError(null);
     setPending(id, true);
     try {
@@ -136,8 +140,13 @@ export default function ItemList({
           return (
             <li
               key={item.id}
-              className="flex flex-wrap items-center gap-3 py-2 sm:flex-nowrap"
+              className={`flex flex-wrap items-center gap-3 py-2 sm:flex-nowrap ${
+                item.inProgress
+                  ? "-mx-2 rounded border-l-4 border-amber-500 bg-amber-50 px-2"
+                  : ""
+              }`}
               data-done={item.done}
+              data-in-progress={item.inProgress}
             >
               <input
                 type="checkbox"
@@ -182,11 +191,36 @@ export default function ItemList({
                 <>
                   <span
                     className={`min-w-0 flex-1 truncate text-sm ${
-                      item.done ? "text-gray-400 line-through" : "text-gray-900"
+                      item.done
+                        ? "text-gray-400 line-through"
+                        : item.inProgress
+                          ? "font-semibold text-gray-900"
+                          : "text-gray-900"
                     }`}
                   >
+                    {item.inProgress && (
+                      <span className="mr-2 rounded bg-amber-500 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                        Working on
+                      </span>
+                    )}
                     {item.title}
                   </span>
+                  {!item.done && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        patchItem(item.id, { inProgress: !item.inProgress })
+                      }
+                      disabled={isPending}
+                      className={`-m-1 shrink-0 p-1 text-xs underline disabled:opacity-50 ${
+                        item.inProgress
+                          ? "text-amber-700 hover:text-amber-900"
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      {item.inProgress ? "Stop" : "Start"}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => startEditing(item)}

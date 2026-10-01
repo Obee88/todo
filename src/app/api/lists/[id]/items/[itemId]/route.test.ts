@@ -239,6 +239,62 @@ describe("PATCH /api/lists/[id]/items/[itemId]", () => {
 
     expect(res.status).toBe(200);
   });
+
+  it("given an item, when marking it done, then it also stops work on it (inProgress=false)", async () => {
+    authMock.mockResolvedValue({ user: { id: "owner-1" } });
+    getAccessibleListMock.mockResolvedValue(sampleList);
+    let captured: Record<string, unknown> = {};
+    updateMock.mockReturnValue(
+      makeCapturingUpdateChain([{ ...sampleItem, done: true }], (v) => (captured = v))
+    );
+
+    const res = await PATCH(patchRequest({ done: true }), ctx());
+
+    expect(res.status).toBe(200);
+    expect(captured).toMatchObject({ done: true, inProgress: false });
+  });
+
+  it("given an item, when starting work on it, then it writes inProgress=true and reopens it, touching only that item", async () => {
+    authMock.mockResolvedValue({ user: { id: "owner-1" } });
+    getAccessibleListMock.mockResolvedValue(sampleList);
+    let captured: Record<string, unknown> = {};
+    updateMock.mockReturnValue(
+      makeCapturingUpdateChain(
+        [{ ...sampleItem, inProgress: true }],
+        (v) => (captured = v)
+      )
+    );
+
+    const res = await PATCH(patchRequest({ inProgress: true }), ctx());
+
+    expect(res.status).toBe(200);
+    expect(updateMock).toHaveBeenCalledTimes(1);
+    expect(captured).toMatchObject({ inProgress: true, done: false });
+    expect(captured).not.toHaveProperty("position");
+  });
+
+  it("given an in-progress item, when stopping work on it, then it writes inProgress=false only", async () => {
+    authMock.mockResolvedValue({ user: { id: "owner-1" } });
+    getAccessibleListMock.mockResolvedValue(sampleList);
+    let captured: Record<string, unknown> = {};
+    updateMock.mockReturnValue(
+      makeCapturingUpdateChain([sampleItem], (v) => (captured = v))
+    );
+
+    const res = await PATCH(patchRequest({ inProgress: false }), ctx());
+
+    expect(res.status).toBe(200);
+    expect(captured).toHaveProperty("inProgress", false);
+    expect(captured).not.toHaveProperty("done");
+  });
+
+  it("given done=true and inProgress=true together, when patching, then it returns 400", async () => {
+    authMock.mockResolvedValue({ user: { id: "owner-1" } });
+
+    const res = await PATCH(patchRequest({ done: true, inProgress: true }), ctx());
+
+    expect(res.status).toBe(400);
+  });
 });
 
 describe("DELETE /api/lists/[id]/items/[itemId]", () => {

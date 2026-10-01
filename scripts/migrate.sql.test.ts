@@ -19,6 +19,17 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const sqlPath = join(__dirname, "..", "drizzle", "0000_init.sql");
 const sql = readFileSync(sqlPath, "utf8");
 
+describe("drizzle/0001_item_in_progress.sql idempotency", () => {
+  const sql1 = readFileSync(
+    join(__dirname, "..", "drizzle", "0001_item_in_progress.sql"),
+    "utf8"
+  );
+
+  it("given the migration file, when ADD COLUMN statements are found, then every one uses IF NOT EXISTS", () => {
+    expect(sql1.match(/ADD COLUMN\s+(?!IF NOT EXISTS)\S/gi) ?? []).toEqual([]);
+  });
+});
+
 describe("drizzle/0000_init.sql idempotency", () => {
   it("given the migration file, when CREATE TABLE statements are found, then every one uses IF NOT EXISTS", () => {
     const createTableStatements = sql.match(/CREATE TABLE\s+(?!IF NOT EXISTS)\S/gi) ?? [];
