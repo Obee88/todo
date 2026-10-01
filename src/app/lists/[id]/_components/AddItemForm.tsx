@@ -3,6 +3,9 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
+import IconButton from "@/app/_components/IconButton";
+import { PlusIcon } from "@/app/_components/icons";
+
 // PLAN.md Section 3 Interfaces: "POST /api/lists/[id]/items ... { title } ->
 // appends item at end of undone group." Same client-fetch convention as
 // CreateListForm / ListControls (see those files' DECISION comments) —
@@ -41,7 +44,7 @@ export default function AddItemForm({ listId }: { listId: string }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-1">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div className="flex items-center gap-1">
         <label htmlFor={`new-item-title-${listId}`} className="sr-only">
           New item title
         </label>
@@ -54,13 +57,13 @@ export default function AddItemForm({ listId }: { listId: string }) {
           onChange={(e) => setTitle(e.target.value)}
           className="min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
         />
-        <button
+        <IconButton
           type="submit"
+          label="Add item"
+          tone="green"
+          icon={<PlusIcon />}
           disabled={submitting}
-          className="w-full rounded bg-gray-900 px-3 py-2 text-sm text-white disabled:opacity-50 sm:w-auto"
-        >
-          Add
-        </button>
+        />
       </div>
       {error && (
         <p role="alert" className="text-sm text-red-600">

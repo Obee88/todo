@@ -3,6 +3,10 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
+import IconButton from "@/app/_components/IconButton";
+import { PlusIcon, UserMinusIcon } from "@/app/_components/icons";
+import { useShareToggle } from "./ShareToggle";
+
 type MemberLike = {
   userId: string;
   email: string;
@@ -80,8 +84,22 @@ export default function MembersPanel({
     }
   }
 
+  // Hidden until the share icon in the list header is toggled; open/close
+  // animates height (grid-rows 0fr ↔ 1fr) plus a fade/slide. `inert` keeps
+  // the collapsed panel's inputs out of the tab order.
+  const open = useShareToggle()?.open ?? true;
+
   return (
-    <section className="space-y-3 border-t border-gray-200 pt-6">
+    <div
+      inert={!open}
+      className={`grid transition-all duration-300 ease-out ${
+        open
+          ? "grid-rows-[1fr] opacity-100"
+          : "grid-rows-[0fr] -translate-y-1 opacity-0"
+      }`}
+    >
+    <div className="min-h-0 overflow-hidden">
+    <section className="mt-6 space-y-3 border-t border-gray-200 pt-4">
       <h2 className="text-lg font-semibold">Sharing</h2>
 
       {members.length === 0 ? (
@@ -93,26 +111,27 @@ export default function MembersPanel({
           {members.map((member) => (
             <li
               key={member.userId}
-              className="flex items-center justify-between gap-3 rounded border border-gray-200 px-3 py-2 text-sm"
+              className={`flex items-center justify-between gap-3 rounded border border-gray-200 py-1 pl-3 pr-1 text-sm transition-opacity duration-200 motion-safe:animate-row-in ${
+                removingId === member.userId ? "opacity-40" : ""
+              }`}
             >
               <span className="min-w-0 truncate">
                 {member.name ? `${member.name} · ` : ""}
                 {member.email}
               </span>
-              <button
-                type="button"
+              <IconButton
+                label="Remove from list"
+                tone="red"
+                icon={<UserMinusIcon />}
                 onClick={() => handleRemove(member.userId)}
                 disabled={removingId === member.userId}
-                className="-m-1 shrink-0 p-1 text-red-600 underline hover:text-red-800 disabled:opacity-50"
-              >
-                Remove
-              </button>
+              />
             </li>
           ))}
         </ul>
       )}
 
-      <form onSubmit={handleInvite} className="flex flex-col gap-2 sm:flex-row sm:items-start">
+      <form onSubmit={handleInvite} className="flex items-start gap-1">
         <div className="min-w-0 flex-1">
           <label htmlFor={`invite-email-${listId}`} className="sr-only">
             Invite by email
@@ -132,14 +151,18 @@ export default function MembersPanel({
             </p>
           )}
         </div>
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded bg-gray-900 px-3 py-2 text-white disabled:opacity-50 sm:w-auto"
-        >
-          {submitting ? "Inviting..." : "Invite"}
-        </button>
+        <div className="pt-1">
+          <IconButton
+            type="submit"
+            label="Invite"
+            tone="green"
+            icon={<PlusIcon />}
+            disabled={submitting}
+          />
+        </div>
       </form>
     </section>
+    </div>
+    </div>
   );
 }

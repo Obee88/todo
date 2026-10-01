@@ -2,6 +2,7 @@ import ListControls from "../lists/[id]/_components/ListControls";
 import ItemList from "../lists/[id]/_components/ItemList";
 import AddItemForm from "../lists/[id]/_components/AddItemForm";
 import MembersPanel from "../lists/[id]/_components/MembersPanel";
+import { ShareToggleProvider } from "../lists/[id]/_components/ShareToggle";
 import type { ListRow, ListMemberRow } from "@/lib/lists";
 import type { ListItemRow } from "@/lib/items";
 
@@ -27,7 +28,8 @@ export default function ListColumn({
   members: ListMemberRow[];
 }) {
   return (
-    <section className="flex max-h-full w-[85vw] max-w-sm shrink-0 snap-start flex-col rounded-lg border border-gray-200 bg-gray-50 sm:w-80">
+    <ShareToggleProvider>
+    <section className="flex max-h-full w-[85vw] max-w-sm shrink-0 snap-start flex-col rounded-lg border border-gray-200 bg-gray-50 motion-safe:animate-row-in sm:w-80">
       <div className="space-y-3 border-b border-gray-200 p-3">
         <ListControls list={list} isOwner={isOwner} compact />
         {!isOwner && (
@@ -37,10 +39,11 @@ export default function ListColumn({
         )}
         <AddItemForm listId={list.id} />
       </div>
-      <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain p-3">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3">
         <ItemList listId={list.id} items={items} />
         {isOwner && <MembersPanel listId={list.id} members={members} />}
       </div>
     </section>
+    </ShareToggleProvider>
   );
 }

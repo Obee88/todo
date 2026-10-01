@@ -4,6 +4,16 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+import IconButton from "@/app/_components/IconButton";
+import {
+  CheckIcon,
+  PencilIcon,
+  ShareIcon,
+  TrashIcon,
+  XIcon,
+} from "@/app/_components/icons";
+import { useShareToggle } from "./ShareToggle";
+
 type ListLike = { id: string; name: string };
 
 // PLAN.md Section 3: "PATCH /api/lists/[id] ... { name } -> renames list."
@@ -30,6 +40,7 @@ export default function ListControls({
   compact?: boolean;
 }) {
   const router = useRouter();
+  const share = useShareToggle();
   const [renaming, setRenaming] = useState(false);
   const [name, setName] = useState(list.name);
   const [error, setError] = useState<string | null>(null);
@@ -102,7 +113,7 @@ export default function ListControls({
       {renaming ? (
         <form
           onSubmit={handleRename}
-          className="flex flex-wrap items-center gap-2"
+          className="flex animate-fade-in items-center gap-1"
         >
           <label htmlFor={`rename-list-${list.id}`} className="sr-only">
             List name
@@ -111,50 +122,57 @@ export default function ListControls({
             id={`rename-list-${list.id}`}
             type="text"
             required
+            autoFocus
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className={`min-w-0 flex-1 basis-full rounded border border-gray-300 px-3 py-2 font-semibold sm:basis-auto ${
+            className={`mr-1 min-w-0 flex-1 rounded border border-gray-300 px-3 py-1.5 font-semibold ${
               compact ? "text-base" : "text-xl"
             }`}
           />
-          <button
+          <IconButton
             type="submit"
+            label="Save name"
+            tone="green"
+            icon={<CheckIcon />}
             disabled={submitting}
-            className="shrink-0 rounded bg-gray-900 px-3 py-2 text-sm text-white disabled:opacity-50"
-          >
-            Save
-          </button>
-          <button
-            type="button"
+          />
+          <IconButton
+            label="Cancel"
+            tone="gray"
+            icon={<XIcon />}
             onClick={() => {
               setName(list.name);
               setRenaming(false);
               setError(null);
             }}
-            className="shrink-0 rounded border border-gray-300 px-3 py-2 text-sm"
-          >
-            Cancel
-          </button>
+          />
         </form>
       ) : (
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-2">
           {title}
-          <div className="flex shrink-0 gap-3 text-sm">
-            <button
-              type="button"
+          <div className="flex shrink-0 items-center gap-0.5">
+            {share && (
+              <IconButton
+                label={share.open ? "Hide sharing" : "Share list"}
+                tone="green"
+                icon={<ShareIcon />}
+                pressed={share.open}
+                onClick={share.toggle}
+              />
+            )}
+            <IconButton
+              label="Rename list"
+              tone="green"
+              icon={<PencilIcon />}
               onClick={() => setRenaming(true)}
-              className="-m-1 p-1 text-gray-500 underline hover:text-gray-700"
-            >
-              Rename
-            </button>
-            <button
-              type="button"
+            />
+            <IconButton
+              label="Delete list"
+              tone="red"
+              icon={<TrashIcon />}
               onClick={handleDelete}
               disabled={submitting}
-              className="-m-1 p-1 text-red-600 underline hover:text-red-800 disabled:opacity-50"
-            >
-              Delete
-            </button>
+            />
           </div>
         </div>
       )}

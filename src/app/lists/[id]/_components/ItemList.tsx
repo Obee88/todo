@@ -3,6 +3,16 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
+import IconButton from "@/app/_components/IconButton";
+import {
+  CheckIcon,
+  PauseIcon,
+  PencilIcon,
+  PlayIcon,
+  TrashIcon,
+  XIcon,
+} from "@/app/_components/icons";
+
 type ItemLike = {
   id: string;
   title: string;
@@ -41,6 +51,7 @@ export default function ItemList({
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
+  const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
 
   function setPending(id: string, pending: boolean) {
     setPendingIds((prev) => {
@@ -87,9 +98,22 @@ export default function ItemList({
     await patchItem(item.id, { done: !item.done });
   }
 
+  function setRemoving(id: string, removing: boolean) {
+    setRemovingIds((prev) => {
+      const next = new Set(prev);
+      if (removing) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }
+
+  // The row starts collapsing immediately (optimistic) while the DELETE is
+  // in flight; it stays collapsed until router.refresh() drops it, or
+  // springs back if the delete fails.
   async function handleDelete(item: ItemLike) {
     setError(null);
     setPending(item.id, true);
+    setRemoving(item.id, true);
     try {
       const res = await fetch(`/api/lists/${listId}/items/${item.id}`, {
         method: "DELETE",
@@ -99,8 +123,10 @@ export default function ItemList({
         return;
       }
       const data = await res.json().catch(() => null);
+      setRemoving(item.id, false);
       setError(data?.error ?? "Could not delete item.");
     } catch {
+      setRemoving(item.id, false);
       setError("Could not delete item.");
     } finally {
       setPending(item.id, false);
@@ -120,7 +146,7 @@ export default function ItemList({
 
   if (items.length === 0) {
     return (
-      <p className="text-sm text-gray-400">
+      <p className="animate-fade-in text-sm text-gray-400">
         No items yet.
       </p>
     );
@@ -137,16 +163,28 @@ export default function ItemList({
         {items.map((item) => {
           const isPending = pendingIds.has(item.id);
           const isEditing = editingId === item.id;
+          const isRemoving = removingIds.has(item.id);
           return (
+            // Outer li animates in on mount and collapses (grid-rows 1fr →
+            // 0fr + fade) while a delete is in flight; the inner wrapper's
+            // overflow-hidden is what lets the row shrink to zero height.
             <li
               key={item.id}
-              className={`flex flex-wrap items-center gap-3 py-2 sm:flex-nowrap ${
-                item.inProgress
-                  ? "-mx-2 rounded border-l-4 border-amber-500 bg-amber-50 px-2"
-                  : ""
+              className={`grid transition-all duration-200 ease-out motion-safe:animate-row-in ${
+                isRemoving
+                  ? "pointer-events-none grid-rows-[0fr] opacity-0"
+                  : "grid-rows-[1fr] opacity-100"
               }`}
               data-done={item.done}
               data-in-progress={item.inProgress}
+            >
+            <div className="min-h-0 overflow-hidden">
+            <div
+              className={`flex items-center gap-2 rounded border-l-4 py-1.5 pl-2 pr-1 transition-colors duration-300 ${
+                item.inProgress
+                  ? "border-amber-500 bg-amber-50"
+                  : "border-transparent"
+              }`}
             >
               <input
                 type="checkbox"
@@ -159,7 +197,7 @@ export default function ItemList({
               {isEditing ? (
                 <form
                   onSubmit={(e) => handleEditSubmit(e, item)}
-                  className="flex min-w-0 flex-1 flex-wrap items-center gap-2"
+                  className="flex min-w-0 flex-1 animate-fade-in items-center gap-0.5"
                 >
                   <label htmlFor={`edit-item-${item.id}`} className="sr-only">
                     Item title
@@ -168,24 +206,24 @@ export default function ItemList({
                     id={`edit-item-${item.id}`}
                     type="text"
                     required
+                    autoFocus
                     value={editTitle}
                     onChange={(e) => setEditTitle(e.target.value)}
-                    className="min-w-0 flex-1 basis-full rounded border border-gray-300 px-2 py-1 text-sm sm:basis-auto"
+                    className="mr-1 min-w-0 flex-1 rounded border border-gray-300 px-2 py-1 text-sm"
                   />
-                  <button
+                  <IconButton
                     type="submit"
+                    label="Save"
+                    tone="green"
+                    icon={<CheckIcon />}
                     disabled={isPending}
-                    className="shrink-0 rounded bg-gray-900 px-2 py-1 text-xs text-white disabled:opacity-50"
-                  >
-                    Save
-                  </button>
-                  <button
-                    type="button"
+                  />
+                  <IconButton
+                    label="Cancel"
+                    tone="gray"
+                    icon={<XIcon />}
                     onClick={() => setEditingId(null)}
-                    className="shrink-0 rounded border border-gray-300 px-2 py-1 text-xs"
-                  >
-                    Cancel
-                  </button>
+                  />
                 </form>
               ) : (
                 <>
@@ -205,40 +243,37 @@ export default function ItemList({
                     )}
                     {item.title}
                   </span>
-                  {!item.done && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        patchItem(item.id, { inProgress: !item.inProgress })
-                      }
+                  <div className="flex shrink-0 items-center gap-0.5">
+                    {!item.done && (
+                      <IconButton
+                        label={item.inProgress ? "Stop working on it" : "Start working on it"}
+                        tone={item.inProgress ? "amber" : "green"}
+                        icon={item.inProgress ? <PauseIcon /> : <PlayIcon />}
+                        onClick={() =>
+                          patchItem(item.id, { inProgress: !item.inProgress })
+                        }
+                        disabled={isPending}
+                      />
+                    )}
+                    <IconButton
+                      label="Edit item"
+                      tone="green"
+                      icon={<PencilIcon />}
+                      onClick={() => startEditing(item)}
                       disabled={isPending}
-                      className={`-m-1 shrink-0 p-1 text-xs underline disabled:opacity-50 ${
-                        item.inProgress
-                          ? "text-amber-700 hover:text-amber-900"
-                          : "text-gray-500 hover:text-gray-700"
-                      }`}
-                    >
-                      {item.inProgress ? "Stop" : "Start"}
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => startEditing(item)}
-                    disabled={isPending}
-                    className="-m-1 shrink-0 p-1 text-xs text-gray-500 underline hover:text-gray-700 disabled:opacity-50"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(item)}
-                    disabled={isPending}
-                    className="-m-1 shrink-0 p-1 text-xs text-red-600 underline hover:text-red-800 disabled:opacity-50"
-                  >
-                    Delete
-                  </button>
+                    />
+                    <IconButton
+                      label="Delete item"
+                      tone="red"
+                      icon={<TrashIcon />}
+                      onClick={() => handleDelete(item)}
+                      disabled={isPending}
+                    />
+                  </div>
                 </>
               )}
+            </div>
+            </div>
             </li>
           );
         })}

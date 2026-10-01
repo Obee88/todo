@@ -7,6 +7,7 @@ import ListControls from "./_components/ListControls";
 import ItemList from "./_components/ItemList";
 import AddItemForm from "./_components/AddItemForm";
 import MembersPanel from "./_components/MembersPanel";
+import { ShareToggleProvider } from "./_components/ShareToggle";
 
 // PLAN.md Section 3 Interfaces: "/lists/[id] | page | required (access
 // check) | List detail: items (sorted), add-item form, member list, invite
@@ -74,16 +75,19 @@ export default async function ListDetailPage({ params }: PageProps) {
 
   return (
     <main className="flex min-h-screen flex-col items-center p-4 sm:p-8">
-      <div className="w-full max-w-lg space-y-8">
-        <ListControls list={list} isOwner={isOwner} />
+      <ShareToggleProvider>
+        <div className="w-full max-w-lg space-y-8">
+          <ListControls list={list} isOwner={isOwner} />
 
-        <div className="space-y-4">
-          <ItemList listId={id} items={items} />
-          <AddItemForm listId={id} />
+          <div>
+            <div className="space-y-4">
+              <ItemList listId={id} items={items} />
+              <AddItemForm listId={id} />
+            </div>
+            {isOwner && <MembersPanel listId={id} members={members} />}
+          </div>
         </div>
-
-        {isOwner && <MembersPanel listId={id} members={members} />}
-      </div>
+      </ShareToggleProvider>
     </main>
   );
 }
