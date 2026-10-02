@@ -1,8 +1,9 @@
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
 import { getListMembers, getMemberLists, getOwnedLists } from "@/lib/lists";
 import { getSortedListItems } from "@/lib/items";
 import CreateListForm from "./_components/CreateListForm";
 import ListColumn from "./_components/ListColumn";
+import AppHeader from "./_components/AppHeader";
 
 // PLAN.md Section 3 Interfaces: "/ | page | required | Lists the user's own
 // lists + lists shared with them." Task 5 wires up the "shared with them"
@@ -59,52 +60,24 @@ export default async function HomePage() {
   // itself never scrolls and lists don't scroll together. Reversal cost:
   // low.
   return (
-    <main className="flex h-dvh flex-col gap-4 p-4 sm:p-6">
-      <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-center justify-between gap-4">
-          <h1 className="min-w-0 truncate text-2xl font-semibold">
-            Your lists
-          </h1>
-          <SignOutButton className="sm:hidden" />
-        </div>
-        <div className="flex items-start gap-4">
-          <div className="w-full sm:w-96">
-            <CreateListForm />
+    <div className="flex h-dvh flex-col">
+      <AppHeader>
+        <CreateListForm />
+      </AppHeader>
+
+      <main className="flex min-h-0 flex-1 flex-col p-4 sm:p-6">
+        {columns.length === 0 ? (
+          <p className="text-sm text-gray-500">
+            You don&apos;t have any lists yet. Create one above.
+          </p>
+        ) : (
+          <div className="-mx-4 flex min-h-0 flex-1 snap-x items-start gap-4 overflow-x-auto overflow-y-hidden px-4 pb-2 sm:-mx-6 sm:px-6">
+            {columns.map((column) => (
+              <ListColumn key={column.list.id} {...column} />
+            ))}
           </div>
-          <SignOutButton className="hidden py-2 sm:block" />
-        </div>
-      </div>
-
-      {columns.length === 0 ? (
-        <p className="text-sm text-gray-500">
-          You don&apos;t have any lists yet. Create one above.
-        </p>
-      ) : (
-        <div className="-mx-4 flex min-h-0 flex-1 snap-x items-start gap-4 overflow-x-auto overflow-y-hidden px-4 pb-2 sm:-mx-6 sm:px-6">
-          {columns.map((column) => (
-            <ListColumn key={column.list.id} {...column} />
-          ))}
-        </div>
-      )}
-    </main>
-  );
-}
-
-function SignOutButton({ className = "" }: { className?: string }) {
-  return (
-    <form
-      className={className}
-      action={async () => {
-        "use server";
-        await signOut({ redirectTo: "/login" });
-      }}
-    >
-      <button
-        type="submit"
-        className="-m-1 shrink-0 p-1 text-sm text-gray-500 underline hover:text-gray-700"
-      >
-        Sign out
-      </button>
-    </form>
+        )}
+      </main>
+    </div>
   );
 }
