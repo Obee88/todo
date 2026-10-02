@@ -8,7 +8,6 @@ import ItemList from "./_components/ItemList";
 import AddItemForm from "./_components/AddItemForm";
 import MembersPanel from "./_components/MembersPanel";
 import { ShareToggleProvider } from "./_components/ShareToggle";
-import AppHeader from "@/app/_components/AppHeader";
 
 // PLAN.md Section 3 Interfaces: "/lists/[id] | page | required (access
 // check) | List detail: items (sorted), add-item form, member list, invite
@@ -75,9 +74,7 @@ export default async function ListDetailPage({ params }: PageProps) {
   const members = isOwner ? await getListMembers(id) : [];
 
   return (
-    <>
-    <AppHeader />
-    <main className="flex flex-col items-center p-4 sm:p-8">
+    <main className="flex min-h-screen flex-col items-center p-4 sm:p-8">
       <ShareToggleProvider>
         <div className="w-full max-w-lg space-y-8">
           <ListControls list={list} isOwner={isOwner} />
@@ -92,6 +89,5 @@ export default async function ListDetailPage({ params }: PageProps) {
         </div>
       </ShareToggleProvider>
     </main>
-    </>
   );
 }

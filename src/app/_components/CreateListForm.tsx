@@ -58,10 +58,10 @@ export default function CreateListForm() {
           placeholder="New list name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="block w-full rounded border border-transparent px-3 py-2 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-300"
+          className="block w-full rounded border border-gray-300 px-3 py-2"
         />
         {error && (
-          <p role="alert" className="mt-1 text-sm font-medium text-red-100">
+          <p role="alert" className="mt-1 text-sm text-red-600">
             {error}
           </p>
         )}
@@ -69,7 +69,7 @@ export default function CreateListForm() {
       <button
         type="submit"
         disabled={submitting}
-        className="w-full whitespace-nowrap rounded bg-white px-3 py-2 font-medium text-green-700 shadow-sm transition hover:bg-green-50 active:scale-95 disabled:opacity-50 sm:w-auto"
+        className="w-full rounded bg-gray-900 px-3 py-2 text-white disabled:opacity-50 sm:w-auto"
       >
         {submitting ? "Creating..." : "Create list"}
       </button>
