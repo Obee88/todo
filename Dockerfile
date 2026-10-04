@@ -44,6 +44,12 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 COPY --from=builder --chown=nextjs:nodejs /app/drizzle ./drizzle
 
+# Upload storage for the public /film page (src/lib/uploads.ts). Files
+# written here live in the container's filesystem and are LOST on redeploy
+# unless a persistent volume is mounted at this path.
+ENV UPLOAD_DIR=/app/uploads
+RUN mkdir -p /app/uploads && chown nextjs:nodejs /app/uploads
+
 USER nextjs
 EXPOSE 3000
 

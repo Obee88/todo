@@ -38,8 +38,15 @@ export default {
       const isAuthApi = pathname.startsWith("/api/auth");
       const isRegisterApi = pathname === "/api/register";
       const isHealthz = pathname === "/healthz";
+      // Public file sharing page (also excluded from the middleware matcher;
+      // see src/middleware.ts).
+      const isFilm =
+        pathname === "/film" ||
+        pathname.startsWith("/film/") ||
+        pathname === "/api/film" ||
+        pathname.startsWith("/api/film/");
 
-      if (isAuthApi || isRegisterApi || isHealthz) return true;
+      if (isAuthApi || isRegisterApi || isHealthz || isFilm) return true;
 
       if (isPublicPage) {
         // Already-signed-in users don't need to see the login/register form

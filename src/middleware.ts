@@ -13,8 +13,13 @@ export const { auth: middleware } = NextAuth(authConfig);
 // /login." The matcher below runs middleware on every request except
 // Next.js internals and static assets; auth.config.ts's `authorized`
 // callback then makes the actual allow/redirect decision per-path.
+//
+// Exception: the public /film page and /api/film/* are excluded from the
+// matcher entirely (not just allowed in `authorized`) — when middleware runs
+// on a request, Next.js buffers its body and caps it at 10 MB, which would
+// break large film uploads. auth.config.ts allows them too, as a fallback.
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|film(?:/|$)|api/film(?:/|$)|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

@@ -8,3 +8,4 @@ Dockerfile
 .env*
 .DS_Store
 *.log
+uploads
