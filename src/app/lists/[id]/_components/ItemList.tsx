@@ -4,6 +4,8 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
 import IconButton from "@/app/_components/IconButton";
+import UrlIcon from "@/app/_components/UrlIcon";
+import { splitTitle } from "@/lib/linkify";
 import {
   CheckIcon,
   PauseIcon,
@@ -241,7 +243,7 @@ export default function ItemList({
                         Working on
                       </span>
                     )}
-                    {item.title}
+                    <ItemTitle title={item.title} />
                   </span>
                   <div className="flex shrink-0 items-center gap-0.5">
                     {!item.done && (
@@ -279,5 +281,20 @@ export default function ItemList({
         })}
       </ul>
     </div>
+  );
+}
+
+// Item title with every URL in it replaced by a link icon (see UrlIcon).
+function ItemTitle({ title }: { title: string }) {
+  return (
+    <>
+      {splitTitle(title).map((segment, i) =>
+        segment.type === "link" ? (
+          <UrlIcon key={i} href={segment.href} text={segment.text} />
+        ) : (
+          <span key={i}>{segment.text}</span>
+        )
+      )}
+    </>
   );
 }

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
-import { createPortal } from "react-dom";
+import type { ReactNode } from "react";
+
+import { useTooltip } from "./Tooltip";
 
 type Tone = "green" | "red" | "amber" | "gray";
 
@@ -19,15 +20,9 @@ const ACTIVE: Record<Tone, string> = {
   gray: "bg-gray-200",
 };
 
-// Icon-only action button with a hover/focus tooltip.
-//
-// # DECISION: the tooltip is portalled to <body> with position:fixed,
-// computed from the button's rect on hover/focus, rather than a CSS-only
-// absolutely-positioned child — rationale: buttons live inside each board
-// column's `overflow-y-auto` scroll area, which would clip an absolutely
-// positioned tooltip on the first/last rows. `label` doubles as the
-// accessible name (aria-label), so screen readers don't depend on the
-// tooltip. Reversal cost: low.
+// Icon-only action button with a hover/focus tooltip (see Tooltip.tsx).
+// `label` doubles as the accessible name (aria-label), so screen readers
+// don't depend on the tooltip.
 export default function IconButton({
   label,
   tone,
@@ -45,24 +40,7 @@ export default function IconButton({
   type?: "button" | "submit";
   pressed?: boolean;
 }) {
-  const [tip, setTip] = useState<{ x: number; y: number; below: boolean } | null>(
-    null
-  );
-
-  // A fixed-position tooltip would be left behind if anything scrolls
-  // (the board or a column), so hide it on any scroll while shown.
-  useEffect(() => {
-    if (!tip) return;
-    const hide = () => setTip(null);
-    window.addEventListener("scroll", hide, { capture: true, passive: true });
-    return () => window.removeEventListener("scroll", hide, { capture: true });
-  }, [tip]);
-
-  function show(el: HTMLElement) {
-    const r = el.getBoundingClientRect();
-    const below = r.top < 36;
-    setTip({ x: r.left + r.width / 2, y: below ? r.bottom + 6 : r.top - 6, below });
-  }
+  const { handlers, tooltip } = useTooltip(label);
 
   return (
     <>
@@ -72,31 +50,14 @@ export default function IconButton({
         disabled={disabled}
         aria-label={label}
         aria-pressed={pressed}
-        onMouseEnter={(e) => show(e.currentTarget)}
-        onMouseLeave={() => setTip(null)}
-        onFocus={(e) => show(e.currentTarget)}
-        onBlur={() => setTip(null)}
+        {...handlers}
         className={`inline-flex shrink-0 items-center justify-center rounded-md p-1.5 transition duration-150 ease-out hover:scale-110 active:scale-95 focus:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-40 ${TONES[tone]} ${
           pressed ? ACTIVE[tone] : ""
         }`}
       >
         {icon}
       </button>
-      {tip &&
-        createPortal(
-          <span
-            role="tooltip"
-            style={{
-              left: tip.x,
-              top: tip.y,
-              translate: tip.below ? undefined : "0 -100%",
-            }}
-            className="pointer-events-none fixed z-50 -translate-x-1/2 animate-tooltip-in whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white shadow-lg"
-          >
-            {label}
-          </span>,
-          document.body
-        )}
+      {tooltip}
     </>
   );
 }

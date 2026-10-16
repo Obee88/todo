@@ -76,6 +76,13 @@ export const ShareIcon = () => (
   </Icon>
 );
 
+export const LinkIcon = () => (
+  <Icon className="h-3.5 w-3.5">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+  </Icon>
+);
+
 export const UserMinusIcon = () => (
   <Icon>
     <circle cx="9" cy="7" r="4" />
